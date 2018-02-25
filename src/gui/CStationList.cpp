@@ -25,6 +25,7 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
 \******************************************************************************/
+#include <QDebug>
 
 #include "CStationList.h"
 
@@ -89,6 +90,8 @@ void CStationList::reset(void) {
         it = mStationList.erase(it);
         delete station;
     }
+
+    qDebug() << "StationList: " <<  "Cleared." ;
 }
 
 bool variantLessThan(const QObject* v1, const QObject* v2)
@@ -185,6 +188,8 @@ void CStationList::loadStations()
         append(SaveChannel.first(), SaveChannel.last());
     }
     Settings.endGroup();
+
+    qDebug() << "StationList: " <<  "Loaded" << this->count() << "stations from config." ;
 }
 
 void CStationList::saveStations()
@@ -206,4 +211,6 @@ void CStationList::saveStations()
         Settings.setValue(mSettingsGroup + "/" + QString::number(i), getStationAt(i - 1));
 
     Settings.endGroup();
+
+    qDebug() << "StationList: " <<  "Saved" << this->count() << "stations to config." ;
 }
