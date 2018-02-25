@@ -84,7 +84,8 @@ CStationList::~CStationList (void)
 {
 }
 
-void CStationList::reset(void) {
+void CStationList::reset(void) 
+{
     for (QList<StationElement*>::iterator it = mStationList.begin(); it != mStationList.end();) {
         StationElement *station = *it;
         it = mStationList.erase(it);
@@ -188,7 +189,6 @@ void CStationList::loadStations()
         append(SaveChannel.first(), SaveChannel.last());
     }
     Settings.endGroup();
-
 
     qInfo() << "Loaded" << this->count() << "channels from config to station list." ;
 }
