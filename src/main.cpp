@@ -309,15 +309,15 @@ int main(int argc, char** argv)
 
 #endif
 
-    // TESTCODE - START
+  
+    // Try to get and play last loaded station
+    QSettings settings;
+    QStringList lastStation = settings.value("lastchannel").toStringList();
 
-    static QString channelToSearchFor = "sunshine";
+    // We need a channel collection and a "lastchannel" info to continue
+    if( RadioController->Stations().count() > 0 && lastStation.count() == 2 ) {
 
-    // when we have already collected stations, try to play a specific one on start
-    if( RadioController->Stations().count() > 0 ) {
-
-        // StationElement* station = RadioController->Stations().first();
-        // RadioController->Play(station->getChannelName(), station->getStationName());
+        static QString channelToSearchFor = lastStation[0].simplified();
 
         QList<StationElement*> stationList = RadioController->Stations();
         QList<StationElement*>::iterator it;
@@ -331,9 +331,7 @@ int main(int argc, char** argv)
         if(it != stationList.end())
             RadioController->Play((*it)->getChannelName(), (*it)->getStationName());
     }
-
-    // TESTCODE - END
-
+    
     CGUI *GUI = new CGUI(RadioController);
 
     // Create new QML application, set some requried options and load the QML file
