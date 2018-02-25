@@ -52,6 +52,17 @@
 #include "rep_CRadioController_replica.h"
 #endif
 
+
+bool isWantedStation(StationElement* listElement, StationElement* searchStation) {
+
+    // bail out if station does not match
+    if( listElement->getChannelName() != searchStation->getChannelName() )
+        return false;
+
+    // if wanted station is part or equal to one of the list stations we found it
+    return listElement->getStationName().indexOf( searchStation->getChannelName()) == 0;
+}
+
 int main(int argc, char** argv)
 {
     QString Version = QString(CURRENT_VERSION) + " Git: " + GITHASH;
@@ -264,6 +275,31 @@ int main(int argc, char** argv)
     QTimer::singleShot(0, RadioController, SLOT(onEventLoopStarted())); // The timer is used to signal if the QT event lopp is running
 
 #endif
+
+    // TESTCODE - START
+
+    static QString channelToSearchFor = "sunshine";
+
+    // when we have already collected stations, try to play a specific one on start
+    if( RadioController->Stations().count() > 0 ) {
+
+        // StationElement* station = RadioController->Stations().first();
+        // RadioController->Play(station->getChannelName(), station->getStationName());
+
+        QList<StationElement*> stationList = RadioController->Stations();
+        QList<StationElement*>::iterator it;
+
+        it = std::find_if(stationList.begin(), stationList.end(), [](StationElement* station) {
+
+                // if wanted station is part or equal to one of the list stations we found it
+                return station->getStationName().indexOf( channelToSearchFor ) == 0;
+        });
+
+        if(it != stationList.end())
+            RadioController->Play((*it)->getChannelName(), (*it)->getStationName());
+    }
+
+    // TESTCODE - END
 
     CGUI *GUI = new CGUI(RadioController);
 
