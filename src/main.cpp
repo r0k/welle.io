@@ -29,13 +29,18 @@
 
 #include <unistd.h>
 
-#include <QApplication>
 #include <QCoreApplication>
+#include <QApplication>
+
+#include <QtGlobal>
+#include <QtDebug>
+
 #include <QCommandLineParser>
-#include <QDebug>
 #include <QDir>
 #include <QSettings>
 #include <QIcon>
+#include <QTextStream>
+
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 
@@ -52,29 +57,57 @@
 #include "rep_CRadioController_replica.h"
 #endif
 
+void RedirectDebugMessages(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    Q_UNUSED( context );
 
-bool isWantedStation(StationElement* listElement, StationElement* searchStation) {
+    QString txt;
+    switch (type) {
+        case QtInfoMsg:
+            QTextStream(stdout) << msg << endl;
+            txt = QString("Info: %1").arg(msg);
+            break;
 
-    // bail out if station does not match
-    if( listElement->getChannelName() != searchStation->getChannelName() )
-        return false;
+        case QtDebugMsg:
+            txt = QString("Debug: %1").arg(msg);
+            break;
 
-    // if wanted station is part or equal to one of the list stations we found it
-    return listElement->getStationName().indexOf( searchStation->getChannelName()) == 0;
+        case QtWarningMsg:
+            txt = QString("Warning: %1").arg(msg);
+            break;
+
+        case QtCriticalMsg:
+            txt = QString("Critical: %1").arg(msg);
+            break;
+
+        case QtFatalMsg:
+            txt = QString("Fatal: %1").arg(msg);
+            abort();
+    }
+
+    QFile outFile("welle.io.log");
+    outFile.open(QIODevice::WriteOnly | QIODevice::Append);
+
+    QTextStream ts(&outFile);
+    ts << txt << endl;
 }
 
 int main(int argc, char** argv)
 {
+    qInstallMessageHandler( RedirectDebugMessages );
+
     QString Version = QString(CURRENT_VERSION) + " Git: " + GITHASH;
 
     QCoreApplication::setOrganizationName("welle.io");
     QCoreApplication::setOrganizationDomain("welle.io");
     QCoreApplication::setApplicationName("welle.io");
     QCoreApplication::setApplicationVersion(Version);
-
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
+    qInfo() << "Starting " << QCoreApplication::applicationName() << "-" << QCoreApplication::applicationVersion();
+
     qRegisterMetaTypeStreamOperators<QList<StationElement*>>("StationList");
+
 #ifdef Q_OS_ANDROID
 
     //  Process Android Service
@@ -316,6 +349,8 @@ int main(int argc, char** argv)
 
     // Add MOT slideshow provider
     engine->addImageProvider(QLatin1String("motslideshow"), GUI->MOTImage);
+
+    // RadioController->StartScan();
 
     // Run application
     app.exec();

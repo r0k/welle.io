@@ -319,8 +319,8 @@ void CRadioController::Initialise(void)
 
 void CRadioController::Play(QString Channel, QString Station)
 {
-    qDebug() << "RadioController:" << "Play channel:"
-             << Channel << "station:" << Station;
+    // qDebug() << "RadioController:" << "Play channel:" << Channel << "station:" << Station;
+    qInfo() << "Play station" << Station.simplified() << "of channel" << Channel;
 
     if (Status == Scanning) {
         StopScan();
@@ -398,6 +398,8 @@ qreal CRadioController::Volume() const
 
 void CRadioController::setVolume(qreal Volume)
 {
+    qInfo() << "Set Volume to " << Volume;
+
     CurrentVolume = Volume;
 
     if (Audio)
@@ -481,7 +483,8 @@ void CRadioController::SetManualChannel(QString Channel)
 
 void CRadioController::StartScan(void)
 {
-    qDebug() << "RadioController:" << "Start channel scan";
+    // qDebug() << "RadioController:" << "Start channel scan";
+    qInfo() << "Start scanning for channels...";
 
     SyncCheckTimer.stop();
     DeviceRestart();
@@ -521,7 +524,8 @@ void CRadioController::StartScan(void)
 
 void CRadioController::StopScan(void)
 {
-    qDebug() << "RadioController:" << "Stop channel scan";
+    // qDebug() << "RadioController:" << "Stop channel scan";
+    qInfo() << "Channel scan done.";
 
     isChannelScan = false;
     CurrentTitle = tr("No Station");

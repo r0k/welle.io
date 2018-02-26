@@ -91,7 +91,7 @@ void CStationList::reset(void) {
         delete station;
     }
 
-    qDebug() << "StationList: " <<  "Cleared." ;
+    qInfo() << "Station list cleared." ;
 }
 
 bool variantLessThan(const QObject* v1, const QObject* v2)
@@ -189,7 +189,8 @@ void CStationList::loadStations()
     }
     Settings.endGroup();
 
-    qDebug() << "StationList: " <<  "Loaded" << this->count() << "stations from config." ;
+
+    qInfo() << "Loaded" << this->count() << "channels from config to station list." ;
 }
 
 void CStationList::saveStations()
@@ -212,5 +213,5 @@ void CStationList::saveStations()
 
     Settings.endGroup();
 
-    qDebug() << "StationList: " <<  "Saved" << this->count() << "stations to config." ;
+    qInfo() << "Found" << this->count() << "station(s).";
 }
