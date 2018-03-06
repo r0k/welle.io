@@ -309,7 +309,6 @@ int main(int argc, char** argv)
 
 #endif
 
-  
     // Try to get and play last loaded station
     QSettings settings;
     QStringList lastStation = settings.value("lastchannel").toStringList();
@@ -331,7 +330,7 @@ int main(int argc, char** argv)
         if(it != stationList.end())
             RadioController->Play((*it)->getChannelName(), (*it)->getStationName());
     }
-    
+
     CGUI *GUI = new CGUI(RadioController);
 
     // Create new QML application, set some requried options and load the QML file
