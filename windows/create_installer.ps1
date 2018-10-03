@@ -1,6 +1,28 @@
+# Copyright (C) 2017
+# Albrecht Lohofener (albrechtloh@gmx.de)
+#
+# This file is part of the welle.io.
+# Many of the ideas as implemented in welle.io are derived from
+# other work, made available through the GNU general Public License.
+# All copyrights of the original authors are recognized.
+#
+# welle.io is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# welle.io is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with welle.io; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
 # Parameter
 param(
-[string]$welleExe = "..\..\build-welle.io-Desktop_Qt_5_9_3_MinGW_32bit-Release\release\welle-io.exe",
+[string]$welleExePath = "build\bin",
 [string]$QTPath = "C:\Qt\5.9.3\mingw53_32\bin",
 [string]$ToolsPath = "C:\Qt\Tools\mingw530_32\bin",
 [string]$InstallerPath = "C:\Qt\Tools\QtInstallerFramework\2.0\bin\"
@@ -34,13 +56,14 @@ Copy-Item packages installer\packages -recurse
 Write-Host "*** Copy non QT DLLs from welle.io-win-libs repository ***" -ForegroundColor Red
 Copy-Item ..\..\welle.io-win-libs\x86_install\* installer\packages\io.welle.welle\data  -recurse
 
-Write-Host "*** Copy welle-io.exe ***" -ForegroundColor Red
-Copy-Item $WelleExe installer\packages\io.welle.welle\data\welle-io.exe
+Write-Host "*** Copy welle-io binary files ***" -ForegroundColor Red
+$welleExePath = $welleExePath + "\*" 
+Copy-Item $welleExePath installer\packages\io.welle.welle\data\ -recurse
 
 # Deploy QT and related plugins
 Write-Host "*** Deploy QT and related plugins ***" -ForegroundColor Red
 & windeployqt installer\packages\io.welle.welle\data\welle-io.exe --plugindir installer\packages\io.welle.welle\data\plugins\ --no-translations
-& windeployqt installer\packages\io.welle.welle\data\welle-io.exe --dir installer\packages\io.welle.welle\data\qml\ --qmldir ..\src\gui\QML\ --no-translations --no-plugins
+& windeployqt installer\packages\io.welle.welle\data\welle-io.exe --dir installer\packages\io.welle.welle\data\qml\ --qmldir ..\src\welle-gui\QML\ --no-translations --no-plugins
 
 Copy-Item installer\packages\io.welle.welle\data\qml\Qt5QuickControls2.dll installer\packages\io.welle.welle\data
 Copy-Item installer\packages\io.welle.welle\data\qml\Qt5QuickTemplates2.dll installer\packages\io.welle.welle\data

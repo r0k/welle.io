@@ -22,7 +22,9 @@
  *  all rights acknowledged
  */
 #include "charsets.h"
-#include <stdint.h>
+#include <cstdint>
+#include <locale>
+#include <codecvt>
 /**
  * This table maps "EBU Latin" charset to corresponding
  * Unicode (UCS2-encoded) characters.
@@ -64,15 +66,12 @@ static const unsigned short ebuLatinToUcs2[] = {
 };
 
 
-
 //The above table can be automatically generated from the table in ODR-PadEnc (ODR-PadEnc/src/charset.cpp) using the following source code:
 // Compile like this: g++ -fPIC -DODRTABLE  -I  /usr/include/x86_64-linux-gnu/qt5/  -I /usr/include/x86_64-linux-gnu/qt5/QtCore/ -lQt5Core -o chartable charsets.cpp
 #ifdef ODRTABLE
 
 #include <iostream>
 #include <string>
-#include <locale>
-#include <codecvt>
 #include <iomanip>
 
 #include "../../../ODR-PadEnc/src/charset.cpp"
@@ -98,38 +97,67 @@ int main(){
 
 #endif
 
-
- 
-
-QString toQStringUsingCharset(const char* buffer,
-        CharacterSet charset, int size)
+std::string toUtf8StringUsingCharset(const void* buffer,
+        CharacterSet charset, size_t num_bytes)
 {
-    QString s;
-    uint16_t length = 0;
-    uint16_t i;
-
-    if (size == -1)
-        length = strlen(buffer);
-    else
-        length = size;
-
-    switch (charset) {
-        case UnicodeUcs2:
-            s = QString::fromUtf16 ((const ushort*) buffer, length);
-            break;
-
-        case UnicodeUtf8:
-            s = QString::fromUtf8 (buffer, length);
-            break;
-
-        case EbuLatin:
-        default:
-            s = QString();
-            for (i = 0; i < length; i++) {
-                s[i] = QChar(ebuLatinToUcs2[((uint8_t*) buffer)[i]]);
-            }
+    if (buffer == nullptr) {
+        throw std::logic_error("Cannot convert charset of empty buffer");
     }
 
-    return s;
-}
+    switch (charset) {
+        case CharacterSet::UnicodeUcs2:
+            {
+                std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf8conv;
 
+                if (num_bytes == 0) {
+                    std::u16string buffer_char16(reinterpret_cast<const char16_t*>(buffer));
+                    return utf8conv.to_bytes(buffer_char16);
+                }
+                else {
+                    const char16_t* start = reinterpret_cast<const char16_t*>(buffer);
+                    const char16_t* end = start + num_bytes/2;
+                    std::u16string buffer_char16(start, end);
+                    return utf8conv.to_bytes(buffer_char16);
+                }
+            }
+            break;
+
+        case CharacterSet::UnicodeUtf8:
+            {
+                if (num_bytes == 0) {
+                    std::string buffer_char8(reinterpret_cast<const char*>(buffer));
+                    return buffer_char8;
+                }
+                else {
+                    const char* start = reinterpret_cast<const char*>(buffer);
+                    const char* end = start + num_bytes;
+                    std::string buffer_char8(start, end);
+                    return buffer_char8;
+                }
+            }
+            break;
+
+        case CharacterSet::EbuLatin:
+        default:
+            {
+                std::u16string s;
+                const uint8_t* buf = reinterpret_cast<const uint8_t*>(buffer);
+
+                std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf8conv;
+
+                if (num_bytes == 0) {
+                    while (*buf) {
+                        s += ebuLatinToUcs2[*buf];
+                        buf++;
+                    }
+                }
+                else {
+                    for (size_t i = 0; i < num_bytes; i++) {
+                        s += ebuLatinToUcs2[buf[i]];
+                    }
+                }
+
+                return utf8conv.to_bytes(s);
+            }
+    }
+}
